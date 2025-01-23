@@ -1,90 +1,17 @@
-const express = require('express');
-const path = require('node:path');
-const movies = require('./movies.json')
+import express from 'express';
+import crypto from 'node:crypto';
+import { readFileSync } from 'node:fs';
+import { corsMiddleware } from './middlewares/cors.js';
+import { routerMovies } from './routes/movies.js';
+import { validateMovie, validatePartial } from './validate-body.js';
+
+
 const app = express();
-const crypto = require('node:crypto');
-const { validateMovie, validatePartial } = require('./validate-body');
-const cors = require('cors');
+const movies = JSON.parse(readFileSync('./movies.json', 'utf-8'))
 
 app.use(express.json());
-app.use(cors());
-
-const ACCEPT_ORIGINS = [
-  'http://localhost:3000/',
-  'http://localhost:4200/'
-
-];
-
-app.get('/movies', (req, res) => {
-
-  /* const origin = req.header('origin');
-
-  if (origin && ACCEPT_ORIGINS.includes(origin)) {
-
-    res.header('Access-Control-Allow-Origin', 'http://localhost:4200/');
-  } */
-
-
-  const { genre, page, pageSize } = req.query;
-
-  if (genre) {
-    const filteredMovies = movies.filter(movie =>
-      movie.genre.some(g => g.toLowerCase() === genre.toString().toLowerCase())
-    );
-
-    res.status(200);
-    res.json({
-      statusCode: 200,
-      status: true,
-      movieS: filteredMovies
-    })
-
-  }
-
-
-  if (page && pageSize) {
-
-    const parsePage = parseInt(page.toString());
-    const parsePageSize = parseInt(pageSize.toString());
-
-    const pageStart = (parsePage - 1) * parsePageSize;
-    const pageEnd = pageStart + parsePageSize;
-
-    const copieMovies = [...movies];
-    const moviesPerPages = copieMovies.slice(pageStart, pageEnd);
-
-    const next = (pageEnd < movies.length) ? `/movies?page=${parsePage + 1}&pageSize=${parsePageSize}` : null;
-
-    const pre = (pageStart > 0) ? `/movies?page=${parsePage - 1}&pageSize=${parsePageSize}` : null;
-
-    res.status(200);
-    res.json({
-      statusCode: 200,
-      status: true,
-      movies: moviesPerPages,
-      pagination: {
-        currentPages: parsePage,
-        totalItems: movies.length,
-        totalPages: Math.ceil(movies.length / parsePageSize),
-        next,
-        pre
-      }
-    });
-  }
-
-  if ((!page && !pageSize) || !genre) {
-    res.status(200);
-    res.json({
-      statusCode: 200,
-      status: true,
-      movies
-    })
-  }
-
-
-
-
-});
+app.use(corsMiddleware());
+app.use('/movies', routerMovies)
 
 
 app.get('/movies/:id', (req, res) => {
