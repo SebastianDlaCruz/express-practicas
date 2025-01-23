@@ -4,7 +4,6 @@ const movies = require('./movies.json')
 const app = express();
 const crypto = require('node:crypto');
 const { validateMovie, validatePartial } = require('./validate-body');
-const { StatementSync } = require('node:sqlite');
 const cors = require('cors');
 
 app.use(express.json());
