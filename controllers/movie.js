@@ -35,12 +35,9 @@ export class MovieController {
 
     if (result.success) {
 
-      const newMovie = {
-        id: crypto.randomUUID(),
-        ...result.data
-      };
 
-      const response = await MovieModel.create(newMovie);
+
+      const response = await MovieModel.create(result.data);
 
       res.status(response.statusCode).json(response)
     }
